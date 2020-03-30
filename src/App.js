@@ -168,8 +168,6 @@ export default class App extends Component {
   }
 
   solucion = () => {
-
-
     var nodos_dia
     var id_dia
 
@@ -217,7 +215,7 @@ export default class App extends Component {
     var parti = this.array_inicio(nueva_matriz.mat1, nueva_matriz.mat2, inicio, fin, nodos);
     console.log(parti)
     this.recorrido(parti.h)
-
+    this.redibujar(id_dia, nodos_dia, nodos_posix, nodos_posiy, parti.i, parti.l, nueva_matriz.mat1, parti.h, nueva_matriz.mat2)
   }
 
   indexofarray_b(val, arreglo) {
@@ -385,14 +383,73 @@ export default class App extends Component {
   contarceros(matriz) {
     var n = 0;
     for (var i = 0; i < matriz.length; i++) {
-        for (var j = 0; j < matriz.length; j++) {
-            if (matriz[i][j] == 0)
-                n++;
-        }
+      for (var j = 0; j < matriz.length; j++) {
+        if (matriz[i][j] == 0)
+          n++;
+      }
     }
     return n;
-}
-
+  }
+  redibujar(id_dia, nodos_dia, nodos_posix, nodos_posiy, partida, llega, matriz, matriz_h, matriz_p) {
+    var len = id_dia.length;
+    var array_datos = [];
+    for (var i = 0; i < len; i++) {
+      array_datos.push(
+        {
+          data: {
+            name: nodos_dia[i]+"\n" + partida[i] + "|" + llega[i],
+            id: id_dia[i]
+          },
+          position: {
+            x: nodos_posix[i],
+            y: nodos_posiy[i]
+          },
+          group: "nodes"
+        });
+    }
+    for (var i = 0; i < len; i++) {
+      for (var j = 0; j < len; j++) {
+        if (matriz_p[i][j] == 1) {
+          if (matriz_h[i][j] == 0) {
+            array_datos.push(
+              {
+                data: {
+                  source: id_dia[i],
+                  target: id_dia[j],
+                  value: "A=" + matriz[i][j] + "\nH=" + matriz_h[i][j]
+                },
+                position: {
+                  x: '0',
+                  y: '0'
+                },
+                group: "edges",
+                style: {
+                  'line-color': 'red',
+                  'target-arrow-color': 'red'
+                }
+              });
+          } else {
+            array_datos.push(
+              {
+                data: {
+                  source: id_dia[i],
+                  target: id_dia[j],
+                  value: "A=" + matriz[i][j] + "\nH=" + matriz_h[i][j]
+                },
+                position: {
+                  x: '0',
+                  y: '0'
+                },
+                group: "edges"
+              });
+          }
+        }
+      }
+    }
+      console.log(array_datos)
+      localStorage.removeItem('jhonson')
+      localStorage.setItem('jhonson', JSON.stringify(array_datos))
+  }
 
 
   render() {
