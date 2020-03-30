@@ -73,8 +73,9 @@ export default class App extends Component {
 
     // Asignacion de Valores a Edges
     this.cy.on('tap', 'edge', (event) => {
-      this.showModal();
-      event.target.data('value', this.state.name)
+      event.target.style({'line-color': 'red', 'target-arrow-color': 'red'})
+      //this.showModal();
+      //event.target.data('value', this.state.name)
       localStorage.removeItem('allInfo')
       localStorage.setItem('allInfo', JSON.stringify(this.cy.json(true)['elements']));
     });
