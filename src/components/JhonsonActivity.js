@@ -27,6 +27,11 @@ export class JhonsonActivity extends Component {
         this.cy.unbind('tap')
         this.cy.unbind('cxttap')
     }
+
+    atras = (url) => {
+        this.props.history.push(url)
+    }
+
     render() {
         return (
             <div className="App">
@@ -64,6 +69,11 @@ export class JhonsonActivity extends Component {
                             ]}
                         />
                     </div>
+                </div>
+                <div className='card-footer'>
+                    <button className='btn btn-outline-primary' onClick={ () => this.atras('/') }>
+                        Atras
+                    </button>
                 </div>
             </div>
         );

@@ -217,6 +217,8 @@ export class MatrizActivity extends Component {
     console.log(parti)
     this.recorrido(parti.h)
     this.redibujar(id_dia, nodos_dia, nodos_posix, nodos_posiy, parti.i, parti.l, nueva_matriz.mat1, parti.h, nueva_matriz.mat2)
+
+    this.props.history.push('/jhonson')
   }
 
   indexofarray_b(val, arreglo) {
