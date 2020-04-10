@@ -18,13 +18,15 @@ export class MatrizActivity extends Component {
     name: '',
     nodes: [],
     table: [],
-    row: []
+    row: [],
+    asigOpcion: -1,
+    valoresasign: []
   }
-
+  /* CREACION DE LA INTERFAZ DE CREACION DE NODOS Y ARISTAS */
   componentDidMount = () => {
     const elementos = localStorage.getItem('allInfo') ? JSON.parse(localStorage.getItem('allInfo')) : []
     this.setState({
-      w: window.innerWidth,
+      w: window.innerWidth / 2,
       h: window.innerHeight / 2,
       elements: elementos
     })
@@ -43,7 +45,6 @@ export class MatrizActivity extends Component {
       }
     });
   }
-
   setUpListeners = () => {
     //Creacion de nodos si no se toca a otro nodo
     this.cy.on('tap', (event) => {
@@ -91,17 +92,16 @@ export class MatrizActivity extends Component {
     });
   }
 
+  /* CREACION DE LA MATRIZ DE ADYACENCIA */
   showModal = () => {
     this.setState({ show: true });
   }
-
   hideModal = () => {
     this.setState({ show: false });
   }
   onChange = (e) => {
     this.setState({ name: e.target.value })
   }
-
   showMatrix = () => {
 
     this.setState({}, () => {
@@ -163,11 +163,11 @@ export class MatrizActivity extends Component {
       this.setState({ nodes: nodes, table: table, row: row, showMatrix: true });
     });
   }
-
   hideMatrix = () => {
     this.setState({ showMatrix: false });
   }
 
+  /* ALGORITMO DE JHONSON */
   solucion = () => {
     var nodos_dia
     var id_dia
@@ -220,7 +220,6 @@ export class MatrizActivity extends Component {
 
     this.props.history.push('/jhonson')
   }
-
   indexofarray_b(val, arreglo) {
     for (var i = 0; i < arreglo.length; i++) {
       var n = val.localeCompare(arreglo[i])
@@ -400,7 +399,7 @@ export class MatrizActivity extends Component {
       array_datos.push(
         {
           data: {
-            name: nodos_dia[i]+"\n" + partida[i] + "|" + llega[i],
+            name: nodos_dia[i] + "\n" + partida[i] + "|" + llega[i],
             id: id_dia[i]
           },
           position: {
@@ -449,22 +448,319 @@ export class MatrizActivity extends Component {
         }
       }
     }
-      console.log(array_datos)
-      localStorage.removeItem('jhonson')
-      localStorage.setItem('jhonson', JSON.stringify(array_datos))
+    console.log(array_datos)
+    localStorage.removeItem('jhonson')
+    localStorage.setItem('jhonson', JSON.stringify(array_datos))
   }
 
+  /* ALGORITMO DE ASIGNACION */
+  asigMini = () => {
+    this.setState({ asigOpcion: 1 })
+    this.asignacion()
+  }
+  asigMax = () => {
+    this.setState({ asigOpcion: 0 })
+    this.asignacion()
+  }
+  asignacion = () => {
+    const opc = this.state.asigOpcion
+    var aux_m = this.actualizar_mat()
+    var aux_m2 = aux_m
+    var iniciales = this.origen(aux_m)
+    var finales = this.destino(aux_m)
+    var valores = this.modificar_mat(aux_m2, iniciales, finales)
+    aux_m = this.modificar_mat(aux_m2, iniciales, finales)
+    var matriz = aux_m;
+    var mensaje = "";
+    var palabra = "";
+    if (iniciales.length == finales.length) {
+      if (opc == 1) {
+        palabra = " máximo ";
+        var max = this.max_mat(matriz, true);
+        for (var i = 0; i < max.length; i++) {
+          for (var j = 0; j < max.length; j++) {
+            matriz[i][j] = matriz[i][j] - max[j];
+          }
+        }
+        max = this.max_mat(matriz, false);
+        for (var i = 0; i < max.length; i++) {
+          for (var j = 0; j < max.length; j++) {
+            matriz[j][i] = matriz[j][i] - max[j];
+          }
+        }
+      }
+      else {
+        palabra = " mínimo ";
+        var max = this.min_mat(matriz, true);
+        for (var i = 0; i < max.length; i++) {
+          for (var j = 0; j < max.length; j++) {
+            matriz[i][j] = matriz[i][j] - max[j];
+          }
+        }
+        max = this.min_mat(matriz, false);
+        for (var i = 0; i < max.length; i++) {
+          for (var j = 0; j < max.length; j++) {
+            matriz[j][i] = matriz[j][i] - max[j];
+          }
+        }
+      }
+      mensaje = "";
+      console.log(matriz)
+      var mat_resultado = this.resultado(matriz);
+      mat_resultado.sort();
+      var attr = 0;
+      var nod = new Array();
+      for (const node of this.cy.filter('node')) {
+        var temp_node = node['_private'].data
+        nod.push(temp_node.name)
+      }
+      nod.sort();
+      console.log(valores)
+      for (j = 0; j < mat_resultado.length; j++) {
+        mensaje = mensaje + "Del Nodo " + nod[iniciales[mat_resultado[j][0]]] + " al nodo " + nod[finales[mat_resultado[j][1]]] + " \n";
+        attr += valores[mat_resultado[j][0]][mat_resultado[j][1]];
+        console.log(valores[mat_resultado[j][0]][mat_resultado[j][1]])
+      }
+      alert("Las asignaciones es de:\n" + mensaje + "El valor" + palabra + "es de : " + attr);
+    } else {
+      alert("La matriz no es n*n")
+    }
+    //funcion para ver aristas que convergen y sacar el maximo de acuerdo a cada fila de la matriz
+  }
+  actualizar_mat() {
+    var temp_nodo
+    var temp_arista
 
+    var nodos = this.cy.filter('node').length;
+    var aristas = this.cy.filter('edge').length;
+    var matriz = new Array(nodos);
+    var nod = [];
+    var ar_id = [];
+    var i = 0
+    for (const node of this.cy.filter('node')) {
+      temp_nodo = node['_private'].data
+      nod.push(temp_nodo.id)
+      matriz[i] = new Array(nodos).fill(0);
+      i++;
+    }
+    nod.sort();
+    for (const arista of this.cy.filter('edge')) {
+      temp_arista = arista['_private'].data
+      ar_id.push(temp_arista.id)
+    }
+    for (var i = 0; i < nodos; i++) {
+      for (var j = 0; j < nodos; j++) {
+        matriz[i][j] = this.obten_val(nod[i], nod[j], ar_id);
+      }
+    }
+    return matriz;
+  }
+  obten_val(nodo_x, nodo_y, a) {
+    var temp_arista
+    for (const arista of this.cy.filter('edge')) {
+      temp_arista = arista['_private'].data
+      if (temp_arista.source == nodo_x && temp_arista.target == nodo_y) {
+        return parseInt(temp_arista.value);
+      }
+    }
+    return 0;
+  }
+  origen(matriz) {
+    var a = matriz[0].length;
+    var nodos = [];
+    for (var i = 0; i < a; i++) {
+      var s = 0;
+      for (var j = 0; j < a; j++) {
+        s = s + matriz[j][i];
+      }
+      if (s == 0)
+        nodos.push(i);
+    }
+    return nodos;
+  }
+  destino(matriz) {
+    var a = matriz[0].length;
+    var nodos = [];
+    for (var i = 0; i < a; i++) {
+      var s = 0;
+      for (var j = 0; j < a; j++) {
+        s = s + matriz[i][j];
+      }
+      if (s == 0)
+        nodos.push(i);
+    }
+    return nodos;
+  }
+  modificar_mat(matriz, origen, destino) {
+    var aux = new Array(destino.length);
+    for (var i = 0; i < destino.length; i++) {
+      aux[i] = (matriz[origen[i]]);
+    }
+    for (var i = 0; i < origen.length; i++) {
+      for (var j = 0; j < matriz[0].length; j++) {
+        if (aux[i][j] == 0) {
+          aux[i].splice(j, 1);
+          j--;
+        }
+      }
+    }
+    return aux;
+  }
+  min_mat(m, opc) {
+    var min;
+    var mins = [];
+    if (opc) {
+      for (var i = 0; i < m[0].length; i++) {
+        min = m[0][i];
+        for (var j = 0; j < m[0].length; j++) {
+          if (m[j][i] < min)
+            min = m[j][i];
+        }
+        mins.push(min);
+      }
+    }
+    else {
+      for (var i = 0; i < m[0].length; i++) {
+        min = m[i][0];
+        for (var j = 0; j < m[0].length; j++) {
+          if (m[i][j] < min)
+            min = m[i][j];
+        }
+        mins.push(min);
+      }
+    }
+    return mins;
+  }
+  max_mat(m, opc) {
+    var max;
+    var maxes = [];
+    if (opc) {
+      for (var i = 0; i < m[0].length; i++) {
+        max = m[0][i];
+        for (var j = 0; j < m[0].length; j++) {
+          if (m[j][i] > max)
+            max = m[j][i];
+        }
+        maxes.push(max);
+      }
+    }
+    else {
+      for (var i = 0; i < m[0].length; i++) {
+        max = m[i][0];
+        for (var j = 0; j < m[0].length; j++) {
+          if (m[i][j] > max)
+            max = m[i][j];
+        }
+        maxes.push(max);
+      }
+    }
+    return maxes;
+  }
+  resultado(matriz) {
+    var punto
+    var i = this.contar_cero(matriz);
+    var len_mat = matriz.length;
+    i = this.actualiza_contador(i, len_mat);
+    var res = new Array();
+    do {
+      punto = [i[0][1], i[0][2]];
+      res.push(punto);
+      i = this.elimina(i, i[0][1], i[0][2]);
+      i = this.actualiza_contador(i, len_mat);
+    }
+    while (i.length > 1);
+    punto = [i[0][1], i[0][2]];
+    res.push(punto);
+    return res;
+  }
+  contar_cero(matriz) {
+    var c = new Array();
+    for (var i = 0; i < matriz.length; i++) {
+      for (var j = 0; j < matriz[0].length; j++) {
+        if (matriz[i][j] == 0) {
+          var x = new Array();
+          x.push(0);
+          x.push(i);
+          x.push(j);
+          c.push(x);
+        }
+      }
+    }
+    return c;
+  }
+  actualiza_contador(i, l) {
+    var x = new Array(l);
+    x.fill(0);
+    for (var a = 0; a < i.length; a++) {
+      x[i[a][1]] += 1;
+    }
+    var conta = 0;
+    for (var b = 0; b < x.length; b++) {
+      var aux = x[b];
+      for (var c = 0; c < aux; c++) {
+        i[conta][0] = aux;
+        conta++;
+      }
+    }
+    i.sort();
+    return i;
+  }
+  elimina(mat, x, y) {
+    var res = new Array();
+    for (var i = 0; i < mat.length; i++) {
+      if (mat[i][1] != x && mat[i][2] != y)
+        res.push(mat[i]);
+    }
+    if (res.length == 0) {
+      res = [];
+      for (var i = 0; i < mat.length; i++) {
+        if (mat[i][0] == mat[i][1]) {
+          res.push(mat[i])
+
+        }
+      }
+    }
+    return res;
+  }
+
+  /* RENDER DE LA PANTALLA */
   render() {
     return (
       <div className="App">
-        <div className='card'>
-          <div className='card-header text-center'>
-            <strong><h2>ALGORITMOS</h2></strong>
-            <h3>Jhonson</h3>
-          </div>
 
-          <div className='card-body'>
+        <div className='row'>
+          <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+            <span className="navbar-brand">ALGORITMOS</span>
+            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+
+            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul className="navbar-nav mr-auto">
+                <li className="nav-item">
+                  <span className="nav-link" onClick={this.showMatrix}>Ver Matriz<span className="sr-only">(current)</span></span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-link" onClick={this.solucion}>Solución Jhonson</span>
+                </li>
+                <li className="nav-item dropdown">
+                  <span className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Asignación
+                  </span>
+                  <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <span className="dropdown-item" onClick={this.asigMini}>Minimizar</span>
+                    <span className="dropdown-item" onClick={this.asigMax}>Maximizar</span>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+          </nav>
+        </div>
+        <div className='container'>
+
+          {/* CARD PARA PONER LOS NODOS Y LAS ARISTAS */}
+          <div className='card my-3'>
             <CytoscapeComponent
               elements={this.state.elements}
               style={{ width: this.state.w, height: this.state.h }}
@@ -537,15 +833,13 @@ export class MatrizActivity extends Component {
               ]}
             />
 
-
+            {/* MODAL PARA PEDIR EL CAMBIO DE LA VARIABLE DEL NODO O DE LA ARISTA */}
             <Modal show={this.state.show} handleClose={this.hideModal}>
               Ingrese el valor: <br /><br />
               <input type='text' onChange={this.onChange} ></input><br /><br />
             </Modal>
 
-
-            <button className='btn btn-block btn-outline btn-primary my-3' type='button' onClick={this.showMatrix}>Ver Matriz</button>
-
+            {/* MODAL DE LA MATRIZ DE ADYACENCIA */}
             <Matriz show={this.state.showMatrix} handleClose={this.hideMatrix}>
               <table className='table table-bordered table-responsive'>
                 <thead>
@@ -557,9 +851,6 @@ export class MatrizActivity extends Component {
                 </tbody>
               </table>
             </Matriz>
-
-            <button className='btn btn-block btn-outline btn-primary my-3' type='button' onClick={this.solucion}>Solución</button>
-
           </div>
         </div>
       </div>

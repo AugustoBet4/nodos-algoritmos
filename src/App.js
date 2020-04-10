@@ -7,7 +7,7 @@ import { JhonsonActivity } from "./components/JhonsonActivity";
 
 function App() {
 
-  return(
+  return (
     <Router>
       <Switch>
         <Route path='/' exact component={MatrizActivity}></Route>
