@@ -515,7 +515,7 @@ export class MatrizActivity extends Component {
       nod.sort();
       var mat = this.actualizar_mat()
       console.log(mat)
-      var valores = this.modificar_mat(mat, iniciales, finales)
+      var valores = this.modificar_mat(matriz, iniciales, finales)
       console.log(valores)
       for (j = 0; j < mat_resultado.length; j++) {
         mensaje = mensaje + "Del Nodo " + nod[iniciales[mat_resultado[j][0]]] + " al nodo " + nod[finales[mat_resultado[j][1]]] + " \n";
