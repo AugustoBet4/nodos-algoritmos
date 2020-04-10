@@ -515,7 +515,7 @@ export class MatrizActivity extends Component {
       nod.sort();
       var mat = this.actualizar_mat()
       console.log(mat)
-      var valores = this.modificar_mat(matriz, iniciales, finales)
+      var valores = this.modificar_mat(mat, iniciales, finales)
       console.log(valores)
       for (j = 0; j < mat_resultado.length; j++) {
         mensaje = mensaje + "Del Nodo " + nod[iniciales[mat_resultado[j][0]]] + " al nodo " + nod[finales[mat_resultado[j][1]]] + " \n";
@@ -729,7 +729,6 @@ export class MatrizActivity extends Component {
     return (
       <div className="App">
 
-        <div className='row'>
           <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
             <span className="navbar-brand">ALGORITMOS</span>
             <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -757,7 +756,6 @@ export class MatrizActivity extends Component {
               </ul>
             </div>
           </nav>
-        </div>
         <div className='container'>
 
           {/* CARD PARA PONER LOS NODOS Y LAS ARISTAS */}
