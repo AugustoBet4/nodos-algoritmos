@@ -468,12 +468,11 @@ export class MatrizActivity extends Component {
     var aux_m2 = aux_m
     var iniciales = this.origen(aux_m)
     var finales = this.destino(aux_m)
-    var valores = this.modificar_mat(aux_m2, iniciales, finales)
-    aux_m = this.modificar_mat(aux_m2, iniciales, finales)
-    var matriz = aux_m;
-    var mensaje = "";
-    var palabra = "";
     if (iniciales.length == finales.length) {
+      aux_m = this.modificar_mat(aux_m2, iniciales, finales)
+      var matriz = aux_m;
+      var mensaje = "";
+      var palabra = "";
       if (opc == 1) {
         palabra = " máximo ";
         var max = this.max_mat(matriz, true);
@@ -505,7 +504,6 @@ export class MatrizActivity extends Component {
         }
       }
       mensaje = "";
-      console.log(matriz)
       var mat_resultado = this.resultado(matriz);
       mat_resultado.sort();
       var attr = 0;
@@ -515,6 +513,9 @@ export class MatrizActivity extends Component {
         nod.push(temp_node.name)
       }
       nod.sort();
+      var mat = this.actualizar_mat()
+      console.log(mat)
+      var valores = this.modificar_mat(mat, iniciales, finales)
       console.log(valores)
       for (j = 0; j < mat_resultado.length; j++) {
         mensaje = mensaje + "Del Nodo " + nod[iniciales[mat_resultado[j][0]]] + " al nodo " + nod[finales[mat_resultado[j][1]]] + " \n";
