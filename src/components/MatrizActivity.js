@@ -477,11 +477,15 @@ export class MatrizActivity extends Component {
     " al nodo " + nodos[finales[elem]]['_private']['data']['name'] */
     for (let i = 0; i < solucion.length; i++) {
       var elem = solucion[i];
-      var nodo = nodos[finales[elem]]['_private']['data'];
-      var nodo2 = nodos[iniciales[i]]['_private']['data'];
+      var nodo = nodos[iniciales[i]]['_private']['data'];
+      var nodo2 = nodos[finales[elem]]['_private']['data'];
       id_nodos.push(nodo.id)
       id_nodos2.push(nodo2.id)
     }
+    console.log('Salen de:')
+    console.log(id_nodos2)
+    console.log('Llegan a:')
+    console.log(id_nodos)
     var nuevos_datos = [];
     var i = 0;
     for (const node of this.cy.filter('nodes')) {
@@ -684,13 +688,13 @@ export class MatrizActivity extends Component {
     var valor = vectorCotas[0];
     for (var i = 1; i < vectorCotas.length; i++) {
       if (opc == 1) {
-        if (valor < vectorCotas[i]) {
+        if (valor > vectorCotas[i]) {
           valor = vectorCotas[i];
           posicion = i;
         }
       }
       else {
-        if (valor > vectorCotas[i]) {
+        if (valor < vectorCotas[i]) {
           valor = vectorCotas[i];
           posicion = i;
         }

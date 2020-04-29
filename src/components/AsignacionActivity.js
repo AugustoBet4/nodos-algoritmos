@@ -47,7 +47,7 @@ export class AsignacionActivity extends Component {
             <div className="App">
                 <div className='card'>
                     <div className='card-header text-center'>
-                        <strong><h2>Jhonson</h2></strong>
+                        <strong><h2>Asignacion</h2></strong>
                         <h3>Solucion</h3>
                     </div>
 
