@@ -3,7 +3,6 @@ import '../App.css';
 import cytoscape from 'cytoscape';
 import CytoscapeComponent from 'react-cytoscapejs';
 import edgehandles from 'cytoscape-edgehandles';
-import { Router, Route, BrowserHistory, IndexRoute } from 'react-router';
 
 edgehandles(cytoscape);
 
@@ -34,15 +33,17 @@ export class MatrizActivity extends Component {
     this.setUpListeners()
 
     this.cy.edgehandles({
-      toogleOffOnLeave: true,
+      preview: false,
       handleNodes: 'node',
       handleSize: 10,
+      snap: false,
+      handleInDrawMode: false,
       edgeType: function () {
         return 'flat'
       },
       loopAllowed: function () {
         return true;
-      }
+      },
     });
   }
   setUpListeners = () => {
@@ -174,7 +175,7 @@ export class MatrizActivity extends Component {
 
     var mostrar = '\t\t\t'
 
-    var nodos = this.cy.filter('node').length
+    var nodos = this.cy.filter('node[classes = eh-preview-active]').length
     var aristas = this.cy.filter('edge').length
     var temp_nodo = ""
     var temp_arit = ""
@@ -184,7 +185,7 @@ export class MatrizActivity extends Component {
     var nodos_posix = []
     var nodos_posiy = []
 
-    for (const node of this.cy.filter('node')) {
+    for (const node of this.cy.filter('node[classes = eh-preview-active]')) {
       temp_nodo = node['_private']
       id_dia.push(temp_nodo.data.id)
       nodos_dia.push(temp_nodo.data.name)
@@ -454,91 +455,116 @@ export class MatrizActivity extends Component {
   }
 
   /* ALGORITMO DE ASIGNACION */
-  asigMini = () => {
-    this.setState({ asigOpcion: 1 })
-    this.asignacion()
+  asigMini = async () => {
+    await this.asignacion(0)
   }
-  asigMax = () => {
-    this.setState({ asigOpcion: 0 })
-    this.asignacion()
+  asigMax = async () => {
+    await this.asignacion(1)
   }
-  asignacion = () => {
-    const opc = this.state.asigOpcion
-    var aux_m = this.actualizar_mat()
+  asignacion = async (opc) => {
+    var mensaje = ''
+    var aux_m = await this.actualizar_mat()
     var aux_m2 = aux_m
-    var iniciales = this.origen(aux_m)
-    var finales = this.destino(aux_m)
-    if (iniciales.length == finales.length) {
-      aux_m = this.modificar_mat(aux_m2, iniciales, finales)
-      var matriz = aux_m;
-      var mensaje = "";
-      var palabra = "";
-      if (opc == 1) {
-        palabra = " máximo ";
-        var max = this.max_mat(matriz, true);
-        for (var i = 0; i < max.length; i++) {
-          for (var j = 0; j < max.length; j++) {
-            matriz[i][j] = matriz[i][j] - max[j];
-          }
-        }
-        max = this.max_mat(matriz, false);
-        for (var i = 0; i < max.length; i++) {
-          for (var j = 0; j < max.length; j++) {
-            matriz[j][i] = matriz[j][i] - max[j];
-          }
-        }
-      }
-      else {
-        palabra = " mínimo ";
-        var max = this.min_mat(matriz, true);
-        for (var i = 0; i < max.length; i++) {
-          for (var j = 0; j < max.length; j++) {
-            matriz[i][j] = matriz[i][j] - max[j];
-          }
-        }
-        max = this.min_mat(matriz, false);
-        for (var i = 0; i < max.length; i++) {
-          for (var j = 0; j < max.length; j++) {
-            matriz[j][i] = matriz[j][i] - max[j];
-          }
-        }
-      }
-      mensaje = "";
-      var mat_resultado = this.resultado(matriz);
-      mat_resultado.sort();
-      var attr = 0;
-      var nod = new Array();
-      for (const node of this.cy.filter('node')) {
-        var temp_node = node['_private'].data
-        nod.push(temp_node.name)
-      }
-      nod.sort();
-      var mat = this.actualizar_mat()
-      console.log(mat)
-      var valores = this.modificar_mat(mat, iniciales, finales)
-      console.log(valores)
-      for (j = 0; j < mat_resultado.length; j++) {
-        mensaje = mensaje + "Del Nodo " + nod[iniciales[mat_resultado[j][0]]] + " al nodo " + nod[finales[mat_resultado[j][1]]] + " \n";
-        attr += valores[mat_resultado[j][0]][mat_resultado[j][1]];
-        console.log(valores[mat_resultado[j][0]][mat_resultado[j][1]])
-      }
-      alert("Las asignaciones es de:\n" + mensaje + "El valor" + palabra + "es de : " + attr);
-    } else {
-      alert("La matriz no es n*n")
+    var finales = await this.origen(aux_m)
+    var iniciales = await this.destino(aux_m)
+    aux_m = await this.modificar_mat(aux_m2, finales, iniciales)
+    var solucion = await this.asignarTareas(aux_m, opc)
+    var nodos = this.cy.filter('nodes');
+    var j = 0
+    var id_nodos = new Array()
+    var id_nodos2 = new Array()
+    /* "Del Nodo " + nodos[iniciales[i]]['_private']['data']['name']
+    " al nodo " + nodos[finales[elem]]['_private']['data']['name'] */
+    for (let i = 0; i < solucion.length; i++) {
+      var elem = solucion[i];
+      var nodo = nodos[finales[elem]]['_private']['data'];
+      var nodo2 = nodos[iniciales[i]]['_private']['data'];
+      id_nodos.push(nodo.id)
+      id_nodos2.push(nodo2.id)
     }
-    //funcion para ver aristas que convergen y sacar el maximo de acuerdo a cada fila de la matriz
+    var nuevos_datos = [];
+    var i = 0;
+    for (const node of this.cy.filter('nodes')) {
+      var temp_node = node['_private']
+      nuevos_datos.push(
+        {
+          data: {
+            name: temp_node['data'].name,
+            id: temp_node['data'].id
+          },
+          position: {
+            x: temp_node['position'].x,
+            y: temp_node['position'].y
+          },
+          group: "nodes"
+        });
+      i++;
+    }
+    for (const edge of this.cy.filter('edges')) {
+      var temp_edge = edge['_private']
+      var count = id_nodos.length - 1;
+      console.log(count)
+      for (let j = 0; j < id_nodos.length; j++) {
+        if (temp_edge['data'].target == id_nodos[j] && temp_edge['data'].source == id_nodos2[j] ) {
+          console.log(temp_edge['data'].target + ' - ' + id_nodos[j])
+          nuevos_datos.push(
+            {
+              data: {
+                source: temp_edge['data'].source,
+                target: temp_edge['data'].target,
+                value: temp_edge['data'].value
+              },
+              position: {
+                x: '0',
+                y: '0'
+              },
+              group: "edges",
+              style: {
+                'line-color': 'red',
+                'target-arrow-color': 'red'
+              }
+            });
+        } else {
+          if(count == 0) {
+            nuevos_datos.push(
+              {
+                data: {
+                  source: temp_edge['data'].source,
+                  target: temp_edge['data'].target,
+                  value: temp_edge['data'].value
+                },
+                position: {
+                  x: '0',
+                  y: '0'
+                },
+                group: "edges"
+              });
+          } else {
+            count--;
+          }
+        }
+      }
+      
+      i++;
+    }
+    console.log(nuevos_datos)
+    localStorage.removeItem('asignacion')
+    localStorage.setItem('asignacion', JSON.stringify(nuevos_datos))
+    this.props.history.push('/asignacion')
+
+    
   }
-  actualizar_mat() {
+  actualizar_mat = async () => {
     var temp_nodo
     var temp_arista
 
-    var nodos = this.cy.filter('node').length;
+    var nodos = this.cy.filter('node[classes = eh-preview-active]').length;
     var aristas = this.cy.filter('edge').length;
     var matriz = new Array(nodos);
     var nod = [];
     var ar_id = [];
     var i = 0
-    for (const node of this.cy.filter('node')) {
+    for (const node of this.cy.filter('node[classes = eh-preview-active]')) {
       temp_nodo = node['_private'].data
       nod.push(temp_nodo.id)
       matriz[i] = new Array(nodos).fill(0);
@@ -551,22 +577,12 @@ export class MatrizActivity extends Component {
     }
     for (var i = 0; i < nodos; i++) {
       for (var j = 0; j < nodos; j++) {
-        matriz[i][j] = this.obten_val(nod[i], nod[j], ar_id);
+        matriz[i][j] = await this.obten_val(nod[i], nod[j], ar_id);
       }
     }
-    return matriz;
+    return matriz
   }
-  obten_val(nodo_x, nodo_y, a) {
-    var temp_arista
-    for (const arista of this.cy.filter('edge')) {
-      temp_arista = arista['_private'].data
-      if (temp_arista.source == nodo_x && temp_arista.target == nodo_y) {
-        return parseInt(temp_arista.value);
-      }
-    }
-    return 0;
-  }
-  origen(matriz) {
+  origen = async (matriz) => {
     var a = matriz[0].length;
     var nodos = [];
     for (var i = 0; i < a; i++) {
@@ -579,7 +595,7 @@ export class MatrizActivity extends Component {
     }
     return nodos;
   }
-  destino(matriz) {
+  destino = async (matriz) => {
     var a = matriz[0].length;
     var nodos = [];
     for (var i = 0; i < a; i++) {
@@ -592,7 +608,17 @@ export class MatrizActivity extends Component {
     }
     return nodos;
   }
-  modificar_mat(matriz, origen, destino) {
+  obten_val(nodo_x, nodo_y, a) {
+    var temp_arista
+    for (const arista of this.cy.filter('edge')) {
+      temp_arista = arista['_private'].data
+      if (temp_arista.source == nodo_x && temp_arista.target == nodo_y) {
+        return parseInt(temp_arista.value);
+      }
+    }
+    return 0;
+  }
+  modificar_mat = async (matriz, origen, destino) => {
     var aux = new Array(destino.length);
     for (var i = 0; i < destino.length; i++) {
       aux[i] = (matriz[origen[i]]);
@@ -607,155 +633,105 @@ export class MatrizActivity extends Component {
     }
     return aux;
   }
-  min_mat(m, opc) {
-    var min;
-    var mins = [];
-    if (opc) {
-      for (var i = 0; i < m[0].length; i++) {
-        min = m[0][i];
-        for (var j = 0; j < m[0].length; j++) {
-          if (m[j][i] < min)
-            min = m[j][i];
-        }
-        mins.push(min);
+  asignarTareas = async (matriz, opc) => {
+    var nodoSolucion = await this.generaSolucion(matriz); // Generamos una solución por defecto
+    var solucion = new Array(matriz.length); // Solución que vdevolvemos
+    var cota = await this.calculaCotaAsociada(nodoSolucion);
+    var agentesDisponibles = await this.inicializaArrayList(matriz); // Tenemos el conjunto de agentes en una estructura de datos
+    var j = 0; // Contador para guiarnos sobre el nodoSolucion y nuestra solucion
+    while (agentesDisponibles.length != 0) { // Mientras que la pila no esté vacía
+      var vectorCotas = new Array(agentesDisponibles.length); // Nos declaramos un array de cotas
+      for (var i = 0; i < vectorCotas.length; i++) { // Rellenamos el array de cotas
+        let temp = agentesDisponibles[i];
+        nodoSolucion[j] = matriz[temp][j];
+        vectorCotas[i] = await this.calculaCotaAsociada(nodoSolucion);
       }
+      var posicion = await this.getPosicionMejorAgente(vectorCotas, opc); // Nos quedamos con el mejor valor (el que hace que la cota sea menor)
+      nodoSolucion[j] = matriz[agentesDisponibles[posicion]][j];
+      solucion[j] = agentesDisponibles[posicion]; // Lo incluimos en nuestra solución
+      agentesDisponibles.splice(posicion, 1); // Lo eliminamos de la pila
+      j++;
     }
-    else {
-      for (var i = 0; i < m[0].length; i++) {
-        min = m[i][0];
-        for (var j = 0; j < m[0].length; j++) {
-          if (m[i][j] < min)
-            min = m[i][j];
-        }
-        mins.push(min);
-      }
-    }
-    return mins;
+    return solucion;
   }
-  max_mat(m, opc) {
-    var max;
-    var maxes = [];
-    if (opc) {
-      for (var i = 0; i < m[0].length; i++) {
-        max = m[0][i];
-        for (var j = 0; j < m[0].length; j++) {
-          if (m[j][i] > max)
-            max = m[j][i];
-        }
-        maxes.push(max);
-      }
+  // Construimos un nodo solución para poder comprar los valores con él
+  generaSolucion = async (matriz) => {
+    var solucion = new Array(matriz.length);
+    var j = 0;
+    for (let i = 0; i < solucion.length; i++) {
+      solucion[i] = matriz[i][j];
+      j++;
     }
-    else {
-      for (var i = 0; i < m[0].length; i++) {
-        max = m[i][0];
-        for (var j = 0; j < m[0].length; j++) {
-          if (m[i][j] > max)
-            max = m[i][j];
-        }
-        maxes.push(max);
-      }
-    }
-    return maxes;
+    return solucion;
   }
-  resultado(matriz) {
-    var punto
-    var i = this.contar_cero(matriz);
-    var len_mat = matriz.length;
-    i = this.actualiza_contador(i, len_mat);
-    var res = new Array();
-    do {
-      punto = [i[0][1], i[0][2]];
-      res.push(punto);
-      i = this.elimina(i, i[0][1], i[0][2]);
-      i = this.actualiza_contador(i, len_mat);
-    }
-    while (i.length > 1);
-    punto = [i[0][1], i[0][2]];
-    res.push(punto);
-    return res;
+  // Generamos la pila con la información sobre los agentes
+  inicializaArrayList = async (matriz) => {
+    var solucion = new Array();
+    for (var i = 0; i < matriz.length; i++)
+      solucion.push(i);
+    return solucion;
   }
-  contar_cero(matriz) {
-    var c = new Array();
-    for (var i = 0; i < matriz.length; i++) {
-      for (var j = 0; j < matriz[0].length; j++) {
-        if (matriz[i][j] == 0) {
-          var x = new Array();
-          x.push(0);
-          x.push(i);
-          x.push(j);
-          c.push(x);
+  // Calculamos la cota asociada a un nodo
+  calculaCotaAsociada = async (nodo) => {
+    var sol = 0;
+    for (var i = 0; i < nodo.length; i++)
+      sol += nodo[i];
+    return sol;
+  }
+  // Extraemos al mejor agente
+  getPosicionMejorAgente = async (vectorCotas, opc) => {
+    var posicion = 0;
+    var valor = vectorCotas[0];
+    for (var i = 1; i < vectorCotas.length; i++) {
+      if (opc == 1) {
+        if (valor < vectorCotas[i]) {
+          valor = vectorCotas[i];
+          posicion = i;
+        }
+      }
+      else {
+        if (valor > vectorCotas[i]) {
+          valor = vectorCotas[i];
+          posicion = i;
         }
       }
     }
-    return c;
+    return posicion;
   }
-  actualiza_contador(i, l) {
-    var x = new Array(l);
-    x.fill(0);
-    for (var a = 0; a < i.length; a++) {
-      x[i[a][1]] += 1;
-    }
-    var conta = 0;
-    for (var b = 0; b < x.length; b++) {
-      var aux = x[b];
-      for (var c = 0; c < aux; c++) {
-        i[conta][0] = aux;
-        conta++;
-      }
-    }
-    i.sort();
-    return i;
-  }
-  elimina(mat, x, y) {
-    var res = new Array();
-    for (var i = 0; i < mat.length; i++) {
-      if (mat[i][1] != x && mat[i][2] != y)
-        res.push(mat[i]);
-    }
-    if (res.length == 0) {
-      res = [];
-      for (var i = 0; i < mat.length; i++) {
-        if (mat[i][0] == mat[i][1]) {
-          res.push(mat[i])
 
-        }
-      }
-    }
-    return res;
-  }
 
   /* RENDER DE LA PANTALLA */
   render() {
     return (
       <div className="App">
 
-          <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-            <span className="navbar-brand">ALGORITMOS</span>
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span className="navbar-toggler-icon"></span>
-            </button>
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+          <span className="navbar-brand">ALGORITMOS</span>
+          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span className="navbar-toggler-icon"></span>
+          </button>
 
-            <div className="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul className="navbar-nav mr-auto">
-                <li className="nav-item">
-                  <span className="nav-link" onClick={this.showMatrix}>Ver Matriz<span className="sr-only">(current)</span></span>
-                </li>
-                <li className="nav-item">
-                  <span className="nav-link" onClick={this.solucion}>Solución Jhonson</span>
-                </li>
-                <li className="nav-item dropdown">
-                  <span className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Asignación
+          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.showMatrix}>Ver Matriz<span className="sr-only">(current)</span></span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.solucion}>Solución Jhonson</span>
+              </li>
+              <li className="nav-item dropdown">
+                <span className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Asignación
                   </span>
-                  <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <span className="dropdown-item" onClick={this.asigMini}>Minimizar</span>
-                    <span className="dropdown-item" onClick={this.asigMax}>Maximizar</span>
-                  </div>
-                </li>
+                <div className="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <span className="dropdown-item" onClick={this.asigMini}>Minimizar</span>
+                  <span className="dropdown-item" onClick={this.asigMax}>Maximizar</span>
+                </div>
+              </li>
 
-              </ul>
-            </div>
-          </nav>
+            </ul>
+          </div>
+        </nav>
         <div className='container'>
 
           {/* CARD PARA PONER LOS NODOS Y LAS ARISTAS */}
