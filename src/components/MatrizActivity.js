@@ -703,6 +703,10 @@ export class MatrizActivity extends Component {
     return posicion;
   }
 
+  noroeste = () => {
+    this.props.history.push('/noroeste')
+  }
+
 
   /* RENDER DE LA PANTALLA */
   render() {
@@ -732,7 +736,9 @@ export class MatrizActivity extends Component {
                   <span className="dropdown-item" onClick={this.asigMax}>Maximizar</span>
                 </div>
               </li>
-
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.noroeste}>Noroeste</span>
+              </li>
             </ul>
           </div>
         </nav>

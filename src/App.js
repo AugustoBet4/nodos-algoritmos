@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { MatrizActivity } from "./components/MatrizActivity";
 import { JhonsonActivity } from "./components/JhonsonActivity";
 import { AsignacionActivity } from "./components/AsignacionActivity";
+import { NorthWestActivity } from "./components/NorthWestActivity";
 
 function App() {
 
@@ -14,6 +15,7 @@ function App() {
         <Route path='/' exact component={MatrizActivity}></Route>
         <Route path='/jhonson' exact component={JhonsonActivity}></Route>
         <Route path='/asignacion' exact component={AsignacionActivity}></Route>
+        <Route path='/noroeste' exact component={NorthWestActivity}></Route>
       </Switch>
     </Router>
   )
