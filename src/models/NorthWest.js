@@ -7,14 +7,14 @@ export class NorthWest {
     feasible = new Array();
 
     constructor(stockSize, requiredSize) {
-        this.stockSize = stockSize;
-        this.requiredSize = requiredSize;
+        this.stockSize = parseInt(stockSize);
+        this.requiredSize = parseInt(requiredSize);
 
-        this.stock = new Array(stockSize);
-        this.required = new Array(requiredSize);
-        this.cost = this.createArray(stockSize, requiredSize);
+        this.stock = new Array(this.stockSize);
+        this.required = new Array(this.requiredSize);
+        this.cost = this.createArray(this.requiredSize, this.stock);
 
-        for(let i=0; i < (requiredSize + stockSize - 1); i++)
+        for (let i = 0; i < (this.requiredSize + this.stockSize - 1); i++)
             this.feasible.push(new Variable());
     }
     setStock(value, index) {
@@ -23,44 +23,45 @@ export class NorthWest {
     setRequired(value, index) {
         this.required[index] = value;
     }
-    setCost(value, stock, required) {
-        this.cost[stock][required] = value;
+    setCost(value, required, stock) {
+        this.cost[required][stock] = value;
     }
 
     maxNorthWest = () => {
         //var start = System.nanoTime();
 
-        var min;        
+        var min;
         var k = 0; //feasible solutions counter
-        
+
         //isSet is responsible for annotating cells that have been allocated
-        var isSet = this.createArray(this.stockSize, this.requiredSize);        
-        for (let j = 0; j < this.requiredSize; j++)
-            for (let i = 0;  i < this.stockSize; i++)
-                    isSet[i][j] = false;
-        
+        var isSet = this.createArray(this.stockSize, this.requiredSize);
+        for (let i = 0; i < this.stockSize; i++)
+            for (let j = 0; j < this.requiredSize; j++)
+                isSet[i][j] = false;
         var i = 0, j = 0;
         var minCost = new Variable();
-        
         //this will loop is responsible for candidating cells by their least cost
-        while(k < (this.stockSize + this.requiredSize - 1)){
-            
+        while (k < (this.stockSize + this.requiredSize - 1)) {
             minCost.setValue(Number.MIN_VALUE);													// HERE            
             //picking up the least cost cell          
-            for (let m = 0;  m < this.stockSize; m++)
-                for (let n = 0; n < this.requiredSize; n++)
-                    if(!isSet[m][n])
-                        if(this.cost[m][n] > minCost.getValue()){                                     //HERE
-                            minCost.setStock(m);
-                            minCost.setRequired(n);
-                            minCost.setValue(this.cost[m][n]);
-                        }            
-            
+            for (let n = 0; n < this.stockSize; n++)
+                for (let m = 0; m < this.requiredSize; m++) {
+                    if (!isSet[n][m])
+                        if (this.cost[n][m] > minCost.getValue()) {                                     //HERE
+                            minCost.setStock(n);
+                            minCost.setRequired(m);
+                            minCost.setValue(this.cost[n][m]);
+                        }
+                }
+
             i = minCost.getStock();
-            j = minCost.getRequired();  
-            
+            j = minCost.getRequired();
+
             //allocating stock in the proper manner
-            min = Math.max(this.required[j], this.stock[i]);												//HERE
+            var stock = parseInt(JSON.stringify(this.stock[i]))
+            var required = parseInt(JSON.stringify(this.required[j]))
+            min = Math.max(stock, required);												//HERE
+            
 
             this.feasible[k].setRequired(j);
             this.feasible[k].setStock(i);
@@ -69,52 +70,52 @@ export class NorthWest {
 
             this.required[j] -= min;
             this.stock[i] -= min;
-            console.log(this.cost)
             //allocating null values in the removed row/column
-            if(this.stock[i] == 0)
-                for(let l = 0; l < this.requiredSize; l++)
-                    isSet[i][l] = true;                    
+            if (this.stock[i] == 0)
+                for (let l = 0; l < this.requiredSize; l++)
+                    isSet[i][l] = true;
             else
-                for(let l = 0; l < this.stockSize; l++)
+                for (let l = 0; l < this.stockSize; l++)
                     isSet[l][j] = true;
-        } 
+        }
         //return (System.nanoTime() - start) * 1.0e-9;
     }
 
     minNorthWest = () => {
         //var start = System.nanoTime();
 
-        var min;        
+        var min;
         var k = 0; //feasible solutions counter
-        
+
         //isSet is responsible for annotating cells that have been allocated
-        var isSet = this.createArray(this.stockSize, this.requiredSize);        
-        for (let j = 0; j < this.requiredSize; j++)
-            for (let i = 0;  i < this.stockSize; i++)
-                    isSet[i][j] = false;
-        
+        var isSet = this.createArray(this.stockSize, this.requiredSize);
+        for (let i = 0; i < this.stockSize; i++)
+            for (let j = 0; j < this.requiredSize; j++)
+                isSet[i][j] = false;
         var i = 0, j = 0;
         var minCost = new Variable();
-        
         //this will loop is responsible for candidating cells by their least cost
-        while(k < (this.stockSize + this.requiredSize - 1)){
-            
+        while (k < (this.stockSize + this.requiredSize - 1)) {
             minCost.setValue(Number.MAX_VALUE);													// HERE            
             //picking up the least cost cell          
-            for (let m = 0;  m < this.stockSize; m++)
-                for (let n = 0; n < this.requiredSize; n++)
-                    if(!isSet[m][n])
-                        if(this.cost[m][n] < minCost.getValue()){                                     //HERE
-                            minCost.setStock(m);
-                            minCost.setRequired(n);
-                            minCost.setValue(this.cost[m][n]);
-                        }            
-            
+            for (let n = 0; n < this.stockSize; n++)
+                for (let m = 0; m < this.requiredSize; m++) {
+                    if (!isSet[n][m])
+                        if (this.cost[n][m] < minCost.getValue()) {                                     //HERE
+                            minCost.setStock(n);
+                            minCost.setRequired(m);
+                            minCost.setValue(this.cost[n][m]);
+                        }
+                }
+
             i = minCost.getStock();
-            j = minCost.getRequired();  
-            
+            j = minCost.getRequired();
+
             //allocating stock in the proper manner
-            min = Math.min(this.required[j], this.stock[i]);												//HERE
+            var stock = parseInt(JSON.stringify(this.stock[i]))
+            var required = parseInt(JSON.stringify(this.required[j]))
+            min = Math.min(stock, required);												//HERE
+            
 
             this.feasible[k].setRequired(j);
             this.feasible[k].setStock(i);
@@ -123,22 +124,20 @@ export class NorthWest {
 
             this.required[j] -= min;
             this.stock[i] -= min;
-            
             //allocating null values in the removed row/column
-            if(this.stock[i] == 0)
-                for(let l = 0; l < this.requiredSize; l++)
-                    isSet[i][l] = true;                    
+            if (this.stock[i] == 0)
+                for (let l = 0; l < this.requiredSize; l++)
+                    isSet[i][l] = true;
             else
-                for(let l = 0; l < this.stockSize; l++)
+                for (let l = 0; l < this.stockSize; l++)
                     isSet[l][j] = true;
-
-        } 
+        }
         //return (System.nanoTime() - start) * 1.0e-9;      
     }
 
     getSolution = () => {
         var result = 0;
-        for(const x of this.feasible){
+        for (const x of this.feasible) {
             result += x.getValue() * this.cost[x.getStock()][x.getRequired()];
         }
         return result;
