@@ -477,8 +477,8 @@ export class MatrizActivity extends Component {
     " al nodo " + nodos[finales[elem]]['_private']['data']['name'] */
     for (let i = 0; i < solucion.length; i++) {
       var elem = solucion[i];
-      var nodo = nodos[finales[elem]]['_private']['data'];
-      var nodo2 = nodos[iniciales[i]]['_private']['data'];
+      var nodo = nodos[iniciales[i]]['_private']['data'];
+      var nodo2 = nodos[finales[elem]]['_private']['data'];
       id_nodos.push(nodo.id)
       id_nodos2.push(nodo2.id)
     }
@@ -574,7 +574,6 @@ export class MatrizActivity extends Component {
       matriz[i] = new Array(nodos).fill(0);
       i++;
     }
-    nod.sort();
     for (const arista of this.cy.filter('edge')) {
       temp_arista = arista['_private'].data
       ar_id.push(temp_arista.id)
@@ -588,6 +587,7 @@ export class MatrizActivity extends Component {
   }
   origen = async (matriz) => {
     var a = matriz[0].length;
+    console.log(matriz)
     var nodos = [];
     for (var i = 0; i < a; i++) {
       var s = 0;
