@@ -24,7 +24,7 @@ export class NorthWestActivity extends Component {
         setData: [],
         verSegundaMatriz: false,
         feasible: [],
-        count: 0,
+        final: [],
     }
 
     handleSubmit(event) {
@@ -149,10 +149,35 @@ export class NorthWestActivity extends Component {
                 this.setState({
                     feasible: test
                 })
-                for (const t of test.feasible) {
-                    console.log(t)
+
+                var final = new Array()
+                for (let i = 0; i < this.state.factories.length; i++) {
+                    final[i] = new Array()
+                    const x = this.state.factories[i];
+                    for (let j = 0; j < this.state.warehouse.length; j++) {
+                        var count = 0;
+                        const y = this.state.warehouse[j];
+                        for (let index = 0; index < test.feasible.length; index++) {
+                            const elem = test.feasible[index];
+                            if (elem['stock'] === i && elem['required'] === j) {
+                                if (elem['value'] !== 0) {
+                                    count++;
+                                    final[i].push(elem['value'])
+                                }
+                            }
+                            else {
+                                if (count === 0 && index === test.feasible.length - 1) {
+                                    final[i].push('')
+                                }
+                            }
+                        }
+                    }
                 }
-                console.log("Target function: " + test.getSolution());
+
+                this.setState({
+                    final: final
+                })
+
             } else {
                 var test = new NorthWest(this.state.s, this.state.r);
                 //var stock = [7, 9, 6] 
@@ -178,11 +203,33 @@ export class NorthWestActivity extends Component {
                 this.setState({
                     feasible: test
                 })
-                for (const t of test.feasible) {
-                    console.log(t)
+                var final = new Array()
+                for (let i = 0; i < this.state.factories.length; i++) {
+                    final[i] = new Array()
+                    const x = this.state.factories[i];
+                    for (let j = 0; j < this.state.warehouse.length; j++) {
+                        var count = 0;
+                        const y = this.state.warehouse[j];
+                        for (let index = 0; index < test.feasible.length; index++) {
+                            const elem = test.feasible[index];
+                            if (elem['stock'] === i && elem['required'] === j) {
+                                if (elem['value'] !== 0) {
+                                    count++;
+                                    final[i].push(elem['value'])
+                                }
+                            }
+                            else {
+                                if (count === 0 && index === test.feasible.length - 1) {
+                                    final[i].push('')
+                                }
+                            }
+                        }
+                    }
                 }
-                console.log(this.state.feasible)
-                console.log("Target function: " + test.getSolution());
+
+                this.setState({
+                    final: final
+                })
             }
         }
     }
@@ -418,43 +465,7 @@ export class NorthWestActivity extends Component {
                                                                 <tr>
                                                                     {
                                                                         this.state.warehouse.map((y, j) => (
-                                                                            /* this.state.feasible['feasible'].map((elem, index) => (
-
-                                                                                elem['stock'] === i && elem['required'] === j ?
-                                                                                    elem['value'] !== 0 ?
-                                                                                        <td>{elem['value']}</td>
-                                                                                        : null
-                                                                                    : index === this.state.feasible['feasible'].length - 1 ?
-                                                                                        <td>   </td>
-                                                                                        : null
-                                                                            )) */
-
-                                                                            this.state.feasible['feasible'].map((elem, index) => (
-
-                                                                                elem['stock'] === i && elem['required'] === j ?
-                                                                                    elem['value'] !== 0 ?
-                                                                                        <td>{elem['value']}</td>
-                                                                                        : null
-                                                                                    : index === this.state.feasible['feasible'].length - 1  ?
-                                                                                        <td>   </td>
-                                                                                        : null
-                                                                            ))
-
-                                                                            /* this.state.feasible['feasible'].map((x, index) => {
-                                                                                if (x['stock'] === i && x['required'] === j) {
-                                                                                    if (x['value'] !== 0) {
-                                                                                        console.log(i + ',' + j + '  - ' + x['value'])
-                                                                                        count++
-                                                                                        return <td>{x['value']}</td>
-                                                                                    }
-                                                                                }
-                                                                                else {
-                                                                                    if (count === 0 && index === this.state.feasible['feasible'].length - 1) {
-                                                                                        console.log(' ' + i + ',' + j + '  - ' + x['value'])
-                                                                                        return <td>0</td>
-                                                                                    }
-                                                                                }
-                                                                            }) */
+                                                                            <td>{this.state.final[i][j]}</td>
                                                                         ))
                                                                     }
                                                                 </tr>
