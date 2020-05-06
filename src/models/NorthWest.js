@@ -40,8 +40,10 @@ export class NorthWest {
                 isSet[i][j] = false;
         var i = 0, j = 0;
         var minCost = new Variable();
+        let stock1 = this.stock;
+        let required1 = this.required;
         //this will loop is responsible for candidating cells by their least cost
-        while (k < (this.stockSize + this.requiredSize - 1)) {
+        while (k < (this.stockSize + this.requiredSize - 1)) { 
             minCost.setValue(Number.MIN_VALUE);													// HERE            
             //picking up the least cost cell          
             for (let n = 0; n < this.stockSize; n++)
@@ -60,21 +62,21 @@ export class NorthWest {
             //allocating stock in the proper manner
             var stock = parseInt(JSON.stringify(this.stock[i]))
             var required = parseInt(JSON.stringify(this.required[j]))
-            min = Math.max(stock, required);												//HERE
-            
+            min = Math.min(stock, required);												//HERE
 
             this.feasible[k].setRequired(j);
             this.feasible[k].setStock(i);
             this.feasible[k].setValue(min);
+
             k++;
 
-            this.required[j] -= min;
-            this.stock[i] -= min;
+            this.stock[i] = stock - min;
+            this.required[j] = required - min;
             //allocating null values in the removed row/column
-            if (this.stock[i] == 0)
+            if (this.stock[i] === 0)
                 for (let l = 0; l < this.requiredSize; l++)
                     isSet[i][l] = true;
-            else
+            if(this.required[j] === 0)
                 for (let l = 0; l < this.stockSize; l++)
                     isSet[l][j] = true;
         }
@@ -115,7 +117,7 @@ export class NorthWest {
             var stock = parseInt(JSON.stringify(this.stock[i]))
             var required = parseInt(JSON.stringify(this.required[j]))
             min = Math.min(stock, required);												//HERE
-            
+
 
             this.feasible[k].setRequired(j);
             this.feasible[k].setStock(i);

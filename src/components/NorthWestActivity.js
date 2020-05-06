@@ -23,7 +23,8 @@ export class NorthWestActivity extends Component {
         requirement: [],
         setData: [],
         verSegundaMatriz: false,
-        feasible: []
+        feasible: [],
+        count: 0,
     }
 
     handleSubmit(event) {
@@ -37,24 +38,12 @@ export class NorthWestActivity extends Component {
         var stock = new Array(parseInt(s));
 
         for (let i = 0; i < r; i++) {
-            warehouse[i] = {
-                id: i,
-                value: i
-            };
-            requirement[i] = {
-                id: i,
-                value: i
-            }
+            warehouse[i] = i
+            requirement[i] = i
         }
         for (let i = 0; i < s; i++) {
-            factories[i] = {
-                id: i,
-                value: i
-            };
-            stock[i] = {
-                id: i,
-                value: i
-            };
+            factories[i] = i;
+            stock[i] = i;
         }
         this.setState({
             r: r,
@@ -75,11 +64,8 @@ export class NorthWestActivity extends Component {
         })
     }
     changeWarehouses(i, event) {
-        console.log(event.target.value)
-        console.log(this.state.warehouse)
         let ware = this.state.warehouse;
         ware[i] = event.target.value
-        console.log(ware)
         this.setState({
             warehouse: ware
         })
@@ -240,7 +226,7 @@ export class NorthWestActivity extends Component {
                                                             <tr>
                                                                 <th scope='row' >
                                                                     <div className='form-group'>
-                                                                        <input type='text' className='form-control' value={x.value} onChange={(e) => this.changeFactories(index, e)} ></input>
+                                                                        <input type='text' className='form-control' value={x} onChange={(e) => this.changeFactories(index, e)} ></input>
                                                                     </div>
                                                                 </th>
                                                             </tr>
@@ -268,7 +254,7 @@ export class NorthWestActivity extends Component {
                                                                 this.state.warehouse.map((x, index) => (
                                                                     <th>
                                                                         <div className='form-group'>
-                                                                            <input type='text' className='form-control' value={x.value} onChange={(e) => this.changeWarehouses(index, e)} ></input>
+                                                                            <input type='text' className='form-control' value={x} onChange={(e) => this.changeWarehouses(index, e)} ></input>
                                                                         </div>
                                                                     </th>
                                                                 ))
@@ -314,7 +300,7 @@ export class NorthWestActivity extends Component {
                                                                 this.state.requirement.map((x, index) => (
                                                                     <th>
                                                                         <div className='form-group'>
-                                                                            <input type='number' className='form-control' value={x.value} onChange={(e) => this.changeRequired(index, e)} ></input>
+                                                                            <input type='number' className='form-control' value={x} onChange={(e) => this.changeRequired(index, e)} ></input>
                                                                         </div>
                                                                     </th>
                                                                 ))
@@ -342,7 +328,7 @@ export class NorthWestActivity extends Component {
                                                             <tr>
                                                                 <th>
                                                                     <div className='form-group'>
-                                                                        <input type='number' className='form-control' value={x.value} onChange={(e) => this.changeStock(index, e)} ></input>
+                                                                        <input type='number' className='form-control' value={x} onChange={(e) => this.changeStock(index, e)} ></input>
                                                                     </div>
                                                                 </th>
                                                             </tr>
@@ -432,9 +418,43 @@ export class NorthWestActivity extends Component {
                                                                 <tr>
                                                                     {
                                                                         this.state.warehouse.map((y, j) => (
-                                                                            this.state.feasible['feasible'].map(elem => (
-                                                                            elem['stock'] === i && elem['required'] === j ?   elem['value'] !== 0 ? <td>{elem['value']}</td> : null : null
+                                                                            /* this.state.feasible['feasible'].map((elem, index) => (
+
+                                                                                elem['stock'] === i && elem['required'] === j ?
+                                                                                    elem['value'] !== 0 ?
+                                                                                        <td>{elem['value']}</td>
+                                                                                        : null
+                                                                                    : index === this.state.feasible['feasible'].length - 1 ?
+                                                                                        <td>   </td>
+                                                                                        : null
+                                                                            )) */
+
+                                                                            this.state.feasible['feasible'].map((elem, index) => (
+
+                                                                                elem['stock'] === i && elem['required'] === j ?
+                                                                                    elem['value'] !== 0 ?
+                                                                                        <td>{elem['value']}</td>
+                                                                                        : null
+                                                                                    : index === this.state.feasible['feasible'].length - 1  ?
+                                                                                        <td>   </td>
+                                                                                        : null
                                                                             ))
+
+                                                                            /* this.state.feasible['feasible'].map((x, index) => {
+                                                                                if (x['stock'] === i && x['required'] === j) {
+                                                                                    if (x['value'] !== 0) {
+                                                                                        console.log(i + ',' + j + '  - ' + x['value'])
+                                                                                        count++
+                                                                                        return <td>{x['value']}</td>
+                                                                                    }
+                                                                                }
+                                                                                else {
+                                                                                    if (count === 0 && index === this.state.feasible['feasible'].length - 1) {
+                                                                                        console.log(' ' + i + ',' + j + '  - ' + x['value'])
+                                                                                        return <td>0</td>
+                                                                                    }
+                                                                                }
+                                                                            }) */
                                                                         ))
                                                                     }
                                                                 </tr>
