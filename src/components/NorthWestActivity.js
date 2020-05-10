@@ -412,7 +412,7 @@ export class NorthWestActivity extends Component {
                                 <div className='container' >
                                     <div className='row'>
                                         <div className='col'>
-                                            <table className='table table-borderless'>
+                                            <table className='table'>
                                                 <tbody>
                                                     <tr>
                                                         <th>
@@ -441,7 +441,7 @@ export class NorthWestActivity extends Component {
                                         <div className='col'>
 
                                             <div className='row'>
-                                                <table className='table mb-0 table-borderless'>
+                                                <table className='table mb-0'>
                                                     <thead>
                                                         <tr>
                                                             {
@@ -458,7 +458,7 @@ export class NorthWestActivity extends Component {
 
                                             <div className='row'>
 
-                                                <table className='table mt-0 mb-0 table-borderless'>
+                                                <table className='table mt-0 mb-0'>
                                                     <tbody>
                                                         {
                                                             this.state.factories.map((x, i) => (
@@ -481,7 +481,7 @@ export class NorthWestActivity extends Component {
                                             </div>
 
                                             <div className='row'>
-                                                <table className='table mt-0 table-borderless'>
+                                                <table className='table mt-0'>
                                                     <thead>
                                                         <tr>
                                                             {
@@ -500,7 +500,7 @@ export class NorthWestActivity extends Component {
                                         </div>
 
                                         <div className='col'>
-                                            <table className='table table-borderless'>
+                                            <table className='table'>
                                                 <tbody>
                                                     <tr>
                                                         <th>

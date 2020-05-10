@@ -706,7 +706,10 @@ export class MatrizActivity extends Component {
   noroeste = () => {
     this.props.history.push('/noroeste')
   }
-
+  
+  arboles = () => {
+    this.props.history.push('/binaryTrees')
+  }
 
   /* RENDER DE LA PANTALLA */
   render() {
@@ -738,6 +741,9 @@ export class MatrizActivity extends Component {
               </li>
               <li className="nav-item">
                 <span className="nav-link" onClick={this.noroeste}>Noroeste</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.arboles}>Arboles Binarios</span>
               </li>
             </ul>
           </div>
