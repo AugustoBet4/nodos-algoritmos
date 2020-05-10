@@ -5,6 +5,7 @@ import cytoscape from 'cytoscape';
 import dagre from "cytoscape-dagre";
 
 import { BinarySearchTree } from '../models/BinarySearchTree';
+import { forEach } from 'p-iteration';
 
 //cytoscape.use(dagre);
 
@@ -62,7 +63,34 @@ export class BinaryTreesActivity extends Component {
     setUpListeners = () => {
         this.cy.unbind('click')
         this.cy.unbind('tap')
-        this.cy.unbind('cxttap')
+        this.cy.on('cxttap', (event) => {
+            var root = this.BST.getRootNode();
+            if (event.target !== this.cy) {
+                var aBorrar = parseInt(event.target[0]['_private']['data'].id)
+                this.cy.remove(event.target)
+                var numerosOld = this.state.numeros;
+                var numerosNew = [];
+                for (let i = 0; i < numerosOld.length; i++) {
+                    const element = numerosOld[i];
+                    if (element !== aBorrar) {
+                        numerosNew.push(element)
+                    }
+                }
+
+                this.BST.removeNode(root, aBorrar)
+                var inorder = this.BST.bigInorder(root);
+                var postorder = this.BST.bigPostorder(root);
+                var preorder = this.BST.bigPreorder(root);
+
+                this.setState({
+                    inorder: inorder,
+                    postorder: postorder,
+                    preorder: preorder,
+                    numeros: numerosNew
+                })
+                this.graficar();
+            }
+        })
     }
 
     atras = (url) => {
@@ -70,13 +98,16 @@ export class BinaryTreesActivity extends Component {
     }
 
     graficar = () => {
+        this.cy.elements().remove();
         var root = this.BST.getRootNode()
 
         var numeros = this.state.numeros;
         let unique = [...new Set(numeros)];
+        console.log(numeros)
 
         for (let i = 0; i < unique.length; i++) {
             const elem = unique[i];
+            console.log(elem)
             var node = this.BST.search(root, elem)
             if (i === 0) {
                 this.cy.add({
@@ -87,68 +118,68 @@ export class BinaryTreesActivity extends Component {
                 })
             }
             console.log('Actual: ' + elem)
-                var anterior = Math.min();
-                for (let j = 0; j < i; j++) {
-                    let node = this.BST.search(root, unique[j])
-                    if (node.right !== null) {
-                        if (elem === node.right.data)
-                            anterior = node.data
-                    }
-                    if (node.left !== null) {
-                        if (elem === node.left.data)
-                            anterior = node.data
-                    }
-                }
-                console.log('Anterior: ' + anterior)
-                var previous = this.cy.filter('node[data.id = ' + anterior + ']');
-                var fatherNode = previous[0]['_private']
-                console.log(fatherNode['data'].id)
+            var anterior = Math.min();
+            for (let j = 0; j < i; j++) {
+                let node = this.BST.search(root, unique[j])
                 if (node.right !== null) {
-                    var x = fatherNode['position'].x + 50 * (i + 1);
-                    var y = fatherNode['position'].y + 50 * (i + 1);
-                    this.cy.add({
-                        groupd: 'nodes',
-                        data: {
-                            id: node.right.data,
-                        },
-                        position: {
-                            x: x,
-                            y: y,
-                        }
-                    })
-                    this.cy.add({
-                        group: 'edges',
-                        data: {
-                            id: elem + '' + node.right.data,
-                            source: elem,
-                            target: node.right.data
-                        }
-                    })
+                    if (elem === node.right.data)
+                        anterior = node.data
                 }
                 if (node.left !== null) {
-                    var x = fatherNode['position'].x - 50 * (i + 1);
-                    console.log(x)
-                    var y = fatherNode['position'].y + 50 * (i + 1);
-                    console.log(y)
-                    this.cy.add({
-                        groupd: 'nodes',
-                        data: {
-                            id: node.left.data,
-                        },
-                        position: {
-                            x: x,
-                            y: y
-                        }
-                    })
-                    this.cy.add({
-                        group: 'edges',
-                        data: {
-                            id: elem + '' + node.left.data,
-                            source: elem,
-                            target: node.left.data
-                        }
-                    })
+                    if (elem === node.left.data)
+                        anterior = node.data
                 }
+            }
+            console.log('Anterior: ' + anterior)
+            var previous = this.cy.filter('node[data.id = ' + anterior + ']');
+            var fatherNode = previous[0]['_private']
+            console.log(fatherNode['data'].id)
+            if (node.right !== null) {
+                var x = fatherNode['position'].x + 50 * (i + 1);
+                var y = fatherNode['position'].y + 50 * (i + 1);
+                this.cy.add({
+                    groupd: 'nodes',
+                    data: {
+                        id: node.right.data,
+                    },
+                    position: {
+                        x: x,
+                        y: y,
+                    }
+                })
+                this.cy.add({
+                    group: 'edges',
+                    data: {
+                        id: elem + '' + node.right.data,
+                        source: elem,
+                        target: node.right.data
+                    }
+                })
+            }
+            if (node.left !== null) {
+                var x = fatherNode['position'].x - 50 * (i + 1);
+                console.log(x)
+                var y = fatherNode['position'].y + 50 * (i + 1);
+                console.log(y)
+                this.cy.add({
+                    groupd: 'nodes',
+                    data: {
+                        id: node.left.data,
+                    },
+                    position: {
+                        x: x,
+                        y: y
+                    }
+                })
+                this.cy.add({
+                    group: 'edges',
+                    data: {
+                        id: elem + '' + node.left.data,
+                        source: elem,
+                        target: node.left.data
+                    }
+                })
+            }
         }
         for (const elem of this.cy.filter('nodes')) {
             console.log(elem['_private']['data'])
