@@ -5,9 +5,8 @@ import cytoscape from 'cytoscape';
 import dagre from "cytoscape-dagre";
 
 import { BinarySearchTree } from '../models/BinarySearchTree';
-import { Node } from '../models/NodeB';
 
-cytoscape.use(dagre);
+//cytoscape.use(dagre);
 
 export class BinaryTreesActivity extends Component {
 
@@ -56,66 +55,6 @@ export class BinaryTreesActivity extends Component {
             numeros: numeros
         })
 
-        //this.BST.insert(1)
-
-        /* actualNum.push(nuevoNum)
-        this.setState({
-            numeros: actualNum
-        }) */
-
-        /* const nodos = this.cy.filter('node')
-        if (nodos.length === 0) {
-            this.cy.add({
-                group: 'nodes',
-                data: {
-                    id: nuevoNum
-                }
-            })
-        } else {
-            for (const nodo of nodos) {
-                var nd = nodo['_private']
-                console.log('Nodo: ' + nd['data'].id)
-                if (nuevoNum < parseInt(nd['data'].id) ) {
-                    this.cy.add({
-                        group: 'nodes',
-                        data: {
-                            id: nuevoNum
-                        },
-                        position: {
-                            x: nd['position'].x - 50 ,
-                            y: nd['position'].y + 50
-                        }
-                    })
-                    this.cy.add({
-                        group:'edges',
-                        data: {
-                            id: nd['data'].id+nuevoNum.toString(),
-                            source: nd['data'].id,
-                            target: nuevoNum.toString(),
-                        }
-                    })
-                } else {
-                    this.cy.add({
-                        group: 'nodes',
-                        data: {
-                            id: nuevoNum
-                        },
-                        position: {
-                            x: nd['position'].x + 50 ,
-                            y: nd['position'].y + 50
-                        }
-                    })
-                    this.cy.add({
-                        group:'edges',
-                        data: {
-                            id: nd['data'].id+nuevoNum.toString(),
-                            source: nd['data'].id,
-                            target: nuevoNum.toString(),
-                        }
-                    })
-                }
-            }
-        } */
         event.preventDefault();
         event.target.number.value = '';
     }
@@ -128,6 +67,93 @@ export class BinaryTreesActivity extends Component {
 
     atras = (url) => {
         this.props.history.push(url)
+    }
+
+    graficar = () => {
+        var root = this.BST.getRootNode()
+
+        var numeros = this.state.numeros;
+        let unique = [...new Set(numeros)];
+
+        for (let i = 0; i < unique.length; i++) {
+            const elem = unique[i];
+            var node = this.BST.search(root, elem)
+            if (i === 0) {
+                this.cy.add({
+                    group: 'nodes',
+                    data: {
+                        id: elem
+                    }
+                })
+            }
+            console.log('Actual: ' + elem)
+                var anterior = Math.min();
+                for (let j = 0; j < i; j++) {
+                    let node = this.BST.search(root, unique[j])
+                    if (node.right !== null) {
+                        if (elem === node.right.data)
+                            anterior = node.data
+                    }
+                    if (node.left !== null) {
+                        if (elem === node.left.data)
+                            anterior = node.data
+                    }
+                }
+                console.log('Anterior: ' + anterior)
+                var previous = this.cy.filter('node[data.id = ' + anterior + ']');
+                var fatherNode = previous[0]['_private']
+                console.log(fatherNode['data'].id)
+                if (node.right !== null) {
+                    var x = fatherNode['position'].x + 50 * (i + 1);
+                    var y = fatherNode['position'].y + 50 * (i + 1);
+                    this.cy.add({
+                        groupd: 'nodes',
+                        data: {
+                            id: node.right.data,
+                        },
+                        position: {
+                            x: x,
+                            y: y,
+                        }
+                    })
+                    this.cy.add({
+                        group: 'edges',
+                        data: {
+                            id: elem + '' + node.right.data,
+                            source: elem,
+                            target: node.right.data
+                        }
+                    })
+                }
+                if (node.left !== null) {
+                    var x = fatherNode['position'].x - 50 * (i + 1);
+                    console.log(x)
+                    var y = fatherNode['position'].y + 50 * (i + 1);
+                    console.log(y)
+                    this.cy.add({
+                        groupd: 'nodes',
+                        data: {
+                            id: node.left.data,
+                        },
+                        position: {
+                            x: x,
+                            y: y
+                        }
+                    })
+                    this.cy.add({
+                        group: 'edges',
+                        data: {
+                            id: elem + '' + node.left.data,
+                            source: elem,
+                            target: node.left.data
+                        }
+                    })
+                }
+        }
+        for (const elem of this.cy.filter('nodes')) {
+            console.log(elem['_private']['data'])
+            console.log(elem['_private']['position'])
+        }
     }
 
     render() {
@@ -148,11 +174,27 @@ export class BinaryTreesActivity extends Component {
                             <input type="submit" value="Submit" className="btn btn-outline-success mb-2" />
                         </form>
 
+                        <div className='my-2'>
+                            <p className='h5'>
+                                Numeros:
+                                {
+                                    this.state.numeros.map((num, index) => (
+                                        <b> {num}   </b>
+                                    ))
+                                }
+                            </p>
+                        </div>
+
+
+                        {
+                            this.state.numeros.length > 0 ? <button className='btn btn-secondary' onClick={() => this.graficar()} >Graficar</button> : null
+                        }
+
+
                         <CytoscapeComponent
                             elements={this.state.elements}
                             style={{ width: this.state.w, height: this.state.h }}
                             cy={(cy) => { this.cy = cy }}
-                            layout={{ name: 'dagre' }}
                             stylesheet={[
                                 {
                                     selector: 'node',
@@ -167,10 +209,7 @@ export class BinaryTreesActivity extends Component {
                                 {
                                     selector: 'edge',
                                     style: {
-                                        'curve-style': 'bezier',
                                         'target-arrow-shape': 'triangle',
-                                        'label': 'data(value)',
-                                        'text-wrap': 'wrap'
                                     }
                                 }
                             ]}
