@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import '../App.css';
-//import CytoscapeComponent from 'react-cytoscapejs';
 import { NorthWest } from "../models/NorthWest";
-import { useTable } from "react-table";
+import CytoscapeComponent from 'react-cytoscapejs';
 
 export class NorthWestActivity extends Component {
 
@@ -14,7 +13,7 @@ export class NorthWestActivity extends Component {
     state = {
         w: 0,
         h: 0,
-        /* elements: [], */
+        elements: [],
         s: 0,
         r: 0,
         warehouse: [],
@@ -100,8 +99,6 @@ export class NorthWestActivity extends Component {
         return newArray;
     }
 
-
-
     componentDidMount = () => {
         /* const elementos = localStorage.getItem('asignacion') ? JSON.parse(localStorage.getItem('asignacion')) : [] */
         this.setState({
@@ -110,11 +107,11 @@ export class NorthWestActivity extends Component {
             /* elements: elementos */
         })
     }
-    /* setUpListeners = () => {
+    setUpListeners = () => {
         this.cy.unbind('click')
         this.cy.unbind('tap')
         this.cy.unbind('cxttap')
-    } */
+    }
     atras = (url) => {
         this.props.history.push(url)
     }
@@ -151,6 +148,34 @@ export class NorthWestActivity extends Component {
                 })
 
                 var final = new Array()
+
+                var nodos = new Array()
+
+                for (let i = 0; i < this.state.factories.length; i++) {
+                    nodos.push({
+                        group: 'nodes',
+                        data: {
+                            id: this.state.factories[i]
+                        },
+                        position: {
+                            x: 0,
+                            y: 0 - (150 * i)
+                        }
+                    })
+                }
+                for (let i = 0; i < this.state.warehouse.length; i++) {
+                    nodos.push({
+                        group: 'nodes',
+                        data: {
+                            id: this.state.warehouse[i]
+                        },
+                        position: {
+                            x: 200,
+                            y: 200 - (150 * i)
+                        }
+                    })
+                }
+
                 for (let i = 0; i < this.state.factories.length; i++) {
                     final[i] = new Array()
                     const x = this.state.factories[i];
@@ -163,6 +188,14 @@ export class NorthWestActivity extends Component {
                                 if (elem['value'] !== 0) {
                                     count++;
                                     final[i].push(elem['value'])
+                                    nodos.push({
+                                        group: 'edges',
+                                        data: {
+                                            source: x,
+                                            target: y,
+                                            value: elem['value']
+                                        }
+                                    })
                                 }
                             }
                             else {
@@ -173,6 +206,9 @@ export class NorthWestActivity extends Component {
                         }
                     }
                 }
+                this.cy.elements().remove()
+                this.cy.add(nodos)
+
 
                 this.setState({
                     final: final
@@ -204,6 +240,33 @@ export class NorthWestActivity extends Component {
                     feasible: test
                 })
                 var final = new Array()
+                var nodos = new Array()
+
+                for (let i = 0; i < this.state.factories.length; i++) {
+                    nodos.push({
+                        group: 'nodes',
+                        data: {
+                            id: this.state.factories[i]
+                        },
+                        position: {
+                            x: 0,
+                            y: 0 - (150 * i)
+                        }
+                    })
+                }
+                for (let i = 0; i < this.state.warehouse.length; i++) {
+                    nodos.push({
+                        group: 'nodes',
+                        data: {
+                            id: this.state.warehouse[i]
+                        },
+                        position: {
+                            x: 200,
+                            y: 200 - (150 * i)
+                        }
+                    })
+                }
+
                 for (let i = 0; i < this.state.factories.length; i++) {
                     final[i] = new Array()
                     const x = this.state.factories[i];
@@ -216,6 +279,14 @@ export class NorthWestActivity extends Component {
                                 if (elem['value'] !== 0) {
                                     count++;
                                     final[i].push(elem['value'])
+                                    nodos.push({
+                                        group: 'edges',
+                                        data: {
+                                            source: x,
+                                            target: y,
+                                            value: elem['value']
+                                        }
+                                    })
                                 }
                             }
                             else {
@@ -226,6 +297,8 @@ export class NorthWestActivity extends Component {
                         }
                     }
                 }
+                this.cy.elements().remove()
+                this.cy.add(nodos)
 
                 this.setState({
                     final: final
@@ -530,6 +603,35 @@ export class NorthWestActivity extends Component {
                                 : null
                         }
 
+                        {
+                            this.state.elements !== [] ?
+
+                                <CytoscapeComponent
+                                    elements={this.state.elements}
+                                    style={{ width: this.state.w, height: this.state.h }}
+                                    cy={(cy) => { this.cy = cy }}
+                                    stylesheet={[
+                                        {
+                                            selector: 'node',
+                                            css: {
+                                                label: 'data(id)',
+                                                'text-valign': 'center',
+                                                'text-halign': 'center',
+                                            }
+                                        },
+
+                                        {
+                                            selector: 'edge',
+                                            style: {
+                                                'curve-style': 'bezier',
+                                                'target-arrow-shape': 'triangle',
+                                                'label': 'data(value)'
+                                            }
+                                        }
+                                    ]}
+                                />
+                                : null
+                        }
                     </div>
                 </div>
                 <div className='card-footer'>
