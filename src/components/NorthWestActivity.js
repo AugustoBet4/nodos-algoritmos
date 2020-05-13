@@ -610,6 +610,7 @@ export class NorthWestActivity extends Component {
                                     elements={this.state.elements}
                                     style={{ width: this.state.w, height: this.state.h }}
                                     cy={(cy) => { this.cy = cy }}
+                                    pan={{ x: 500, y: 200 }}
                                     stylesheet={[
                                         {
                                             selector: 'node',
@@ -623,9 +624,14 @@ export class NorthWestActivity extends Component {
                                         {
                                             selector: 'edge',
                                             style: {
+                                                'target-label': 'data(value)',
                                                 'curve-style': 'bezier',
                                                 'target-arrow-shape': 'triangle',
-                                                'label': 'data(value)'
+                                                'text-valign': 'center',
+                                                'text-halign': 'center',
+                                                'target-text-margin-x': -15,
+                                                'target-text-margin-y': -15,
+                                                'font-size': 15
                                             }
                                         }
                                     ]}
