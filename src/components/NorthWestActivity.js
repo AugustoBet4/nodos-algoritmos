@@ -610,11 +610,13 @@ export class NorthWestActivity extends Component {
                                     elements={this.state.elements}
                                     style={{ width: this.state.w, height: this.state.h }}
                                     cy={(cy) => { this.cy = cy }}
-                                    pan={{ x: 500, y: 200 }}
+                                    pan={{ x: 100, y: 200 }}
                                     stylesheet={[
                                         {
                                             selector: 'node',
                                             css: {
+                                                width: 50,
+                                                height: 50,
                                                 label: 'data(id)',
                                                 'text-valign': 'center',
                                                 'text-halign': 'center',
@@ -630,7 +632,6 @@ export class NorthWestActivity extends Component {
                                                 'text-valign': 'center',
                                                 'text-halign': 'center',
                                                 'target-text-margin-x': -15,
-                                                'target-text-margin-y': -15,
                                                 'font-size': 15
                                             }
                                         }
