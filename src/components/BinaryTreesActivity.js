@@ -104,20 +104,10 @@ export class BinaryTreesActivity extends Component {
         var numeros = this.state.numeros;
         let unique = [...new Set(numeros)];
         console.log(numeros)
+        var prueba = [];
 
         for (let i = 0; i < unique.length; i++) {
             const elem = unique[i];
-            console.log(elem)
-            var node = this.BST.search(root, elem)
-            if (i === 0) {
-                this.cy.add({
-                    group: 'nodes',
-                    data: {
-                        id: elem
-                    }
-                })
-            }
-            console.log('Actual: ' + elem)
             var anterior = Math.min();
             for (let j = 0; j < i; j++) {
                 let node = this.BST.search(root, unique[j])
@@ -130,61 +120,107 @@ export class BinaryTreesActivity extends Component {
                         anterior = node.data
                 }
             }
-            console.log('Anterior: ' + anterior)
-            var previous = this.cy.filter('node[data.id = ' + anterior + ']');
-            var fatherNode = previous[0]['_private']
-            console.log(fatherNode['data'].id)
-            if (node.right !== null) {
-                var x = fatherNode['position'].x + 50 * (i + 1);
-                var y = fatherNode['position'].y + 50 * (i + 1);
-                this.cy.add({
-                    groupd: 'nodes',
-                    data: {
-                        id: node.right.data,
-                    },
-                    position: {
-                        x: x,
-                        y: y,
-                    }
+            if (anterior === Math.min()) {
+                prueba.push({
+                    id: elem,
+                    anterior: null,
+                    x: 0,
+                    y: 0
                 })
-                this.cy.add({
-                    group: 'edges',
-                    data: {
-                        id: elem + '' + node.right.data,
-                        source: elem,
-                        target: node.right.data
-                    }
+            } else {
+                prueba.push({
+                    id: elem,
+                    anterior: anterior,
+                    x: 0,
+                    y: 0
                 })
             }
-            if (node.left !== null) {
-                var x = fatherNode['position'].x - 50 * (i + 1);
-                console.log(x)
-                var y = fatherNode['position'].y + 50 * (i + 1);
-                console.log(y)
-                this.cy.add({
-                    groupd: 'nodes',
+        }
+        console.log(prueba)
+        var final = [];
+        for (let i = 1; i < prueba.length; i++) {
+            const elem = prueba[i];
+            console.log(elem)
+            //console.log(elem)
+            var previous = this.BST.search(root, elem['anterior'])
+            //console.log(previous)
+            if (previous.right !== null) {
+                if (previous.right.data === elem['id']) {
+                    for (let j = 0; j < prueba.length; j++) {
+                        const element = prueba[j];
+                        if (element.id === elem['anterior']) {
+                            console.log('aqui')
+                            prueba[i] = {
+                                id: elem['id'],
+                                anterior: elem['anterior'],
+                                x: element['x'] + 50,
+                                y: element['y'] + 50
+                            }
+                        }
+                    }
+                }
+            }
+            if (previous.left !== null) {
+                if (previous.left.data === elem['id']) {
+                    for (let j = 0; j < prueba.length; j++) {
+                        const element = prueba[j];
+                        if (element.id === elem['anterior']) {
+                            console.log('aqui2')
+                            prueba[i] = {
+                                id: elem['id'],
+                                anterior: elem['anterior'],
+                                x: element['x'] - 50,
+                                y: element['y'] + 50
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        console.log(prueba)
+        for (let i = 0; i < prueba.length; i++) {
+            const elem = prueba[i];
+            if (i === 0) {
+                final.push({
+                    group: 'nodes',
                     data: {
-                        id: node.left.data,
+                        id: elem['id']
                     },
                     position: {
-                        x: x,
-                        y: y
+                        x: elem['x'],
+                        y: elem['y']
                     }
                 })
-                this.cy.add({
-                    group: 'edges',
+            } else {
+                final.push({
+                    group: 'nodes',
                     data: {
-                        id: elem + '' + node.left.data,
-                        source: elem,
-                        target: node.left.data
+                        id: elem['id']
+                    },
+                    position: {
+                        x: elem['x'],
+                        y: elem['y']
                     }
                 })
             }
         }
-        for (const elem of this.cy.filter('nodes')) {
+        for (let i = 1; i < prueba.length; i++) {
+            const elem = prueba[i];
+            final.push({
+                group: 'edges',
+                data: {
+                    id: elem['anterior'] + '' + elem['id'],
+                    source: elem['anterior'],
+                    target: elem['id']
+                }
+            })
+        }
+        console.log(final)
+        this.cy.add(final);
+        /* for (const elem of this.cy.filter('nodes')) {
             console.log(elem['_private']['data'])
             console.log(elem['_private']['position'])
-        }
+        } */
     }
 
     render() {
@@ -226,6 +262,7 @@ export class BinaryTreesActivity extends Component {
                             elements={this.state.elements}
                             style={{ width: this.state.w, height: this.state.h }}
                             cy={(cy) => { this.cy = cy }}
+                            pan={{ x: 100, y: 200 }}
                             stylesheet={[
                                 {
                                     selector: 'node',
