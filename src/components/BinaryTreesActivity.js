@@ -153,7 +153,7 @@ export class BinaryTreesActivity extends Component {
                             prueba[i] = {
                                 id: elem['id'],
                                 anterior: elem['anterior'],
-                                x: element['x'] + 50,
+                                x: element['x'] + 100,
                                 y: element['y'] + 50
                             }
                         }
@@ -169,7 +169,7 @@ export class BinaryTreesActivity extends Component {
                             prueba[i] = {
                                 id: elem['id'],
                                 anterior: elem['anterior'],
-                                x: element['x'] - 50,
+                                x: element['x'] - 100,
                                 y: element['y'] + 50
                             }
                         }
@@ -209,7 +209,7 @@ export class BinaryTreesActivity extends Component {
             final.push({
                 group: 'edges',
                 data: {
-                    id: elem['anterior'] + '' + elem['id'],
+                    id: elem['anterior'] + '-' + elem['id'],
                     source: elem['anterior'],
                     target: elem['id']
                 }

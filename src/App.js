@@ -7,6 +7,7 @@ import { JhonsonActivity } from "./components/JhonsonActivity";
 import { AsignacionActivity } from "./components/AsignacionActivity";
 import { NorthWestActivity } from "./components/NorthWestActivity";
 import { BinaryTreesActivity } from "./components/BinaryTreesActivity";
+import { CompeteActivity } from "./components/CompeteActivity";
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
         <Route path='/asignacion' exact component={AsignacionActivity}></Route>
         <Route path='/noroeste' exact component={NorthWestActivity}></Route>
         <Route path='/binaryTrees' exact component={BinaryTreesActivity}></Route>
+        <Route path='/compete' exact component={CompeteActivity}></Route>
       </Switch>
     </Router>
   )

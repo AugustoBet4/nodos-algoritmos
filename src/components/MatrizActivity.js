@@ -711,6 +711,10 @@ export class MatrizActivity extends Component {
     this.props.history.push('/binaryTrees')
   }
 
+  compete = () => {
+    this.props.history.push('/compete')
+  }
+
   /* RENDER DE LA PANTALLA */
   render() {
     return (
@@ -744,6 +748,9 @@ export class MatrizActivity extends Component {
               </li>
               <li className="nav-item">
                 <span className="nav-link" onClick={this.arboles}>Arboles Binarios</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.compete}>Compete</span>
               </li>
             </ul>
           </div>
