@@ -48,13 +48,9 @@ export class SortingActivity extends Component {
 
     solucion = () => {
         const numeros = this.state.numeros;
-        const backUp = numeros;
         this.shell(numeros)
         this.selection(numeros, function (a, b) { return b - a; })
         this.insertion(numeros)
-        this.setState({
-            numeros: backUp
-        })
     }
 
     shell = (arr) => {
