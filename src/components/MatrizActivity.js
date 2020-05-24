@@ -714,6 +714,9 @@ export class MatrizActivity extends Component {
   compete = () => {
     this.props.history.push('/compete')
   }
+  sorting = () => {
+    this.props.history.push('/sorting')
+  }
 
   /* RENDER DE LA PANTALLA */
   render() {
@@ -751,6 +754,9 @@ export class MatrizActivity extends Component {
               </li>
               <li className="nav-item">
                 <span className="nav-link" onClick={this.compete}>Compete</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-link" onClick={this.sorting}>Sorting</span>
               </li>
             </ul>
           </div>
