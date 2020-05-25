@@ -102,8 +102,6 @@ export class CompeteActivity extends Component {
         var pasada = 0;
         var iguales = 0;
 
-        console.log(pares.length)
-
         while (true) {
             for (let i = 0; i < pares.length; i++) {
                 //console.log(pasada)
@@ -112,7 +110,6 @@ export class CompeteActivity extends Component {
                     const par2 = pares[0][pasada];
 
                     if (par1.x === par2.x && par1.y === par2.y) {
-                        console.log('aqui')
                         iguales++;
                     }
 
@@ -127,7 +124,7 @@ export class CompeteActivity extends Component {
                     const par1 = pares[i][pasada];
                     const par2 = pares[i + 1][pasada];
 
-                    if (par1.x === par2.x && par1.y === par2.y)
+                    if (par1.x == par2.x && par1.y == par2.y)
                         iguales++;
 
                     var newX = parseFloat(((par2.x + par1.x) / 2).toFixed(2));
@@ -140,7 +137,7 @@ export class CompeteActivity extends Component {
                 }
             }
             console.log(iguales)
-            if (iguales === pares.length)
+            if (pasada === 400 || iguales === pares.length)
                 break;
 
             iguales = 0;
@@ -161,6 +158,12 @@ export class CompeteActivity extends Component {
             position: {
                 x: last.x * 100,
                 y: last.y * 100
+            },
+            style: {
+                'background-color': 'blue',
+                color: 'white',
+                'width': 75,
+                'height': 75
             }
         })
 
