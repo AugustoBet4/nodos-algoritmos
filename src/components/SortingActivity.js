@@ -13,6 +13,7 @@ export class SortingActivity extends Component {
         w: 0,
         h: 0,
         numeros: [],
+        num2: [],
         shell: [],
         shellFinished: false,
         shellTime: 0,
@@ -21,9 +22,10 @@ export class SortingActivity extends Component {
         insertionTime: 0,
         selection: [],
         selectionFinished: false,
-        selectionTime: 0
-        //elements: [],
-        //suma: 0,
+        selectionTime: 0,
+        merge: [],
+        mergeFinished: false,
+        mergeTime: 0
     }
 
     componentDidMount = () => {
@@ -34,26 +36,43 @@ export class SortingActivity extends Component {
     }
 
     handleSubmit(event) {
-        const nuevoNum = parseInt(event.target.number.value);
+        const nuevoNum = event.target.number.value;
         var numeros = this.state.numeros;
+        var num2 = this.state.num2;
         numeros.push(nuevoNum);
+        num2.push(nuevoNum);
 
         this.setState({
-            numeros: numeros
+            numeros: numeros,
+            num2: num2
         })
 
         event.preventDefault();
         event.target.number.value = '';
     }
 
-    solucion = () => {
+    solucion = async () => {
         const numeros = this.state.numeros;
-        this.shell(numeros)
-        this.selection(numeros, function (a, b) { return b - a; })
-        this.insertion(numeros)
+        await (this.shell(numeros))
+        await (this.selection(numeros, function (a, b) { return b - a; }))
+        await (this.insertion(numeros))
+        
+        const startTime = performance.now()
+        
+        const merge = this.mergeSort(numeros)
+        
+        const endTime = performance.now()
+
+        var timeDiff = endTime - startTime;
+
+        this.setState({
+            merge: merge,
+            mergeFinished: true,
+            mergeTime: timeDiff
+        })
     }
 
-    shell = (arr) => {
+    shell = async (arr) => {
         const startTime = performance.now()
         var increment = arr.length / 2;
         while (increment > 0) {
@@ -85,7 +104,7 @@ export class SortingActivity extends Component {
             shellTime: timeDiff
         })
     }
-    selection = (arr, compare_Function) => {
+    selection = async (arr, compare_Function) => {
         const startTime = performance.now()
 
         function compare(a, b) {
@@ -124,7 +143,7 @@ export class SortingActivity extends Component {
             selectionTime: timeDiff
         })
     }
-    insertion = (nums) => {
+    insertion = async (nums) => {
         const startTime = performance.now()
 
         for (let i = 1; i < nums.length; i++) {
@@ -148,6 +167,38 @@ export class SortingActivity extends Component {
         })
 
     }
+    mergeSort = (arr) => {
+        if (arr.length === 1) {
+            // return once we hit an array with a single item
+            return arr
+        }
+
+        const middle = Math.floor(arr.length / 2) // get the middle item of the array rounded down
+        const left = arr.slice(0, middle) // items on the left side
+        const right = arr.slice(middle) // items on the right side
+
+        return this.merge(
+            this.mergeSort(left),
+            this.mergeSort(right)
+        )
+    }
+    merge = (left, right) => {
+
+        let result = []
+        let indexLeft = 0
+        let indexRight = 0
+
+        while (indexLeft < left.length && indexRight < right.length) {
+            if (left[indexLeft] < right[indexRight]) {
+                result.push(left[indexLeft])
+                indexLeft++
+            } else {
+                result.push(right[indexRight])
+                indexRight++
+            }
+        }
+        return result.concat(left.slice(indexLeft)).concat(right.slice(indexRight))
+    }
 
     atras = (url) => {
         this.props.history.push(url)
@@ -165,17 +216,17 @@ export class SortingActivity extends Component {
                     <div className='card-body'>
                         <form className='form-inline' onSubmit={this.handleSubmit} >
                             <div className='form-group mb-2'>
-                                <label >Agregar numero: </label>
-                                <input type="number" name="number" className='form-control' required />
+                                <label >Agregar elemento: </label>
+                                <input type="text" name="number" className='form-control' required />
                             </div>
                             <input type="submit" value="Submit" className="btn btn-outline-success mb-2" />
                         </form>
 
                         <div className='my-2'>
                             <p className='h5'>
-                                Numeros:
+                                Elementos:
                                 {
-                                    this.state.numeros.map(num => (
+                                    this.state.num2.map(num => (
                                         <b> {num}   </b>
                                     ))
                                 }
@@ -249,36 +300,30 @@ export class SortingActivity extends Component {
                                         </tr>
                                         : null
                                 }
+
+                                {
+                                    this.state.mergeFinished ?
+                                        <tr>
+                                            <th scope='row'>
+                                                Mergesort:
+                                            </th>
+                                            <td>
+                                                {
+                                                    this.state.merge.map(num => (
+                                                        <b> {num}   </b>
+                                                    ))
+                                                }
+                                            </td>
+                                            <td>
+                                                Tiempo: {parseFloat(this.state.mergeTime).toFixed(6)}  ms.
+                                            </td>
+
+                                        </tr>
+                                        : null
+                                }
                             </tbody>
                         </table>
 
-
-                        {/* <CytoscapeComponent
-                            elements={this.state.elements}
-                            style={{ width: this.state.w, height: this.state.h }}
-                            cy={(cy) => { this.cy = cy }}
-                            stylesheet={[
-                                {
-                                    selector: 'node',
-                                    css: {
-                                        label: 'data(name)',
-                                        'text-valign': 'center',
-                                        'text-halign': 'center',
-                                        'text-wrap': 'wrap'
-                                    }
-                                },
-
-                                {
-                                    selector: 'edge',
-                                    style: {
-                                        'curve-style': 'bezier',
-                                        'target-arrow-shape': 'triangle',
-                                        'label': 'data(value)',
-                                        'text-wrap': 'wrap'
-                                    }
-                                }
-                            ]}
-                        /> */}
                     </div>
                 </div>
                 <div className='card-footer'>
